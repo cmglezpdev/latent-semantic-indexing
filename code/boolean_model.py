@@ -4,32 +4,22 @@ import pickle
 from gensim import corpora
 from gensim.models import TfidfModel
 from sympy import symbols, to_dnf, sympify
-from processing import *
+Puedes realizar la conversión de las palabras clave 'and', 'or' y 'not' a los operadores correspondientes '&' (AND), '|' (OR) y '~' (NOT) en la cadena de consulta antes de parsearla con `sympy`. Aquí tienes un ejemplo de cómo hacerlo:
+from sympy.logic.boolalg import to_cnf
+from sympy.parsing.sympy_parser import parse_expr
 
-# Descargar modelo de Spacy
-nlp = spacy.load("en_core_web_sm")  # loading spacy module
-# Documentos de ejemplo
-documentos = [
-    "Este es el primer documento.",
-    "Este documento es el segundo documento.",
-    "Y este es el tercer documento.",
-]
+def convertir_a_fnc(query_string):
+    # Reemplaza las palabras clave por los operadores correspondientes
+    query_string = query_string.replace('and', '&').replace('or', '|').replace('not', '~')
 
-modelo_tfidf = None
-corpus_tfidf = None
+    # Parsea la cadena de consulta a una expresión simbólica
+    query_expr = parse_expr(query_string)
 
+    # Convierte la expresión en FNC
+    fnc_query = to_cnf(query_expr)
 
-def load_tf_idf_model(corpus):
-    global modelo_tfidf, corpus_tfidf
+    return fnc_query
 
-    if os.path.exists("./data/tf_idf_model.pkl"):
-        modelo_tfidf = pickle.load(open("../data/tf_idf_model.pkl", "rb"))
-        corpus_tfidf = pickle.load(open("../data/tf_idf_corpus.pkl", "rb"))
-    else:
-        modelo_tfidf = TfidfModel(corpus)
-        corpus_tfidf = modelo_tfidf[corpus]
-        pickle.dump(modelo_tfidf, open("./data/tf_idf_model.pkl", "wb"))
-        pickle.dump(corpus_tfidf, open("./data/tf_idf_corpus.pkl", "wb"))
 
 
 def get_matching_docs(dictionary, vectorized, query, alpha=0.5):
@@ -37,26 +27,12 @@ def get_matching_docs(dictionary, vectorized, query, alpha=0.5):
         {term: freq for term, freq in doc} for doc in corpus_tfidf
     ]
 
-    query_tokens = tokenize([query])
 
-    query_tokens = noise_removal(query_tokens)
-    query_tokens = stopword_elimination(query_tokens)
-    query_tokens = lemmatization(query_tokens)
-    consulta_tfidf = modelo_tfidf[dictionary.doc2bow(query_tokens[0])]
+    processed_query = convertir_a_fnc(query)
 
-    documentos_relevantes = [
-        i
-        for i, pesos_documento in enumerate(modelo_pesos_documentos)
-        if calcular_similitud(pesos_documento, consulta_tfidf) >= alpha
-    ]
+    resultado = set()
+    for termino, documentos in dictionary.items():
+        if query_expr.subs({simbolo: (termino in documentos) for simbolo in processed_query.free_symbols}):
+            resultado.update(documentos)
 
-    return documentos_relevantes
-
-
-# Función para calcular la similitud
-def calcular_similitud(pesos_documento, consulta_tfidf):
-    similitud = sum(
-        pesos_documento.get(term, 0) * peso_consulta
-        for term, peso_consulta in consulta_tfidf
-    )
-    return similitud
+    return resultado

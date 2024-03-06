@@ -1,0 +1,7 @@
+numpy
+sympy
+gensim
+sapcy
+gradio
+sklearn
+pickle
