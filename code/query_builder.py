@@ -1,4 +1,4 @@
-from boolean_model import get_matching_docs, load_tf_idf_model
+from boolean_model import get_matching_docs
 from dataset_processing_LSI import get_corpus_text, load_data
 from query_aumentation import *
 from processing import *
@@ -17,8 +17,6 @@ The mean of this module is to make the processing of the query
 """
 
 U, S, Vt, doc_representation, vectorized, dictionary, tokenized_documents = load_data()
-load_tf_idf_model(vectorized)
-
 
 def process_query(
     query: str,
@@ -103,5 +101,10 @@ def boolean_model_retrieveral(query: str):
     """
     if query == "" or query is None:
         return []
-    global dictionary
-    return [(i, get_corpus_text(i)) for i in get_matching_docs(dictionary, vectorized, query)[:4]]
+
+    global dictionary, vectorized
+    try:
+        return [(i, get_corpus_text(i)) for i in get_matching_docs(dictionary, vectorized, query)[:4]]
+    except Exception as e:
+        print(e)
+        return [] 

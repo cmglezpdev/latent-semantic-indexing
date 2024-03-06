@@ -1,59 +1,47 @@
 import spacy
-import os
-import pickle
-from gensim.models import TfidfModel
 from processing import *
-from constants import DATA_SAVE_DIR
+from sympy import sympify, to_dnf
 
 # Descargar modelo de Spacy
 nlp = spacy.load("en_core_web_sm")  # loading spacy module
-# Documentos de ejemplo
-documentos = [
-    "Este es el primer documento.",
-    "Este documento es el segundo documento.",
-    "Y este es el tercer documento.",
-]
 
-modelo_tfidf = None
-corpus_tfidf = None
-
-
-def load_tf_idf_model(corpus):
-    global modelo_tfidf, corpus_tfidf
-
-    if os.path.exists(f"{DATA_SAVE_DIR}/tf_idf_model.pkl"):
-        modelo_tfidf = pickle.load(open(f"{DATA_SAVE_DIR}/tf_idf_model.pkl", "rb"))
-        corpus_tfidf = pickle.load(open(f"{DATA_SAVE_DIR}/tf_idf_corpus.pkl", "rb"))
-    else:
-        modelo_tfidf = TfidfModel(corpus)
-        corpus_tfidf = modelo_tfidf[corpus]
-        pickle.dump(modelo_tfidf, open(f"{DATA_SAVE_DIR}/tf_idf_model.pkl", "wb"))
-        pickle.dump(corpus_tfidf, open(f"{DATA_SAVE_DIR}/tf_idf_corpus.pkl", "wb"))
+def query_to_dnf(query: str):
+    processed_query = query.replace('AND', '&').replace('OR', '|').replace('NOT', '~')
+    
+    # Convertir a expresión sympy y aplicar to_dnf
+    query_expr = sympify(processed_query, evaluate=False)
+    query_dnf = to_dnf(query_expr, simplify=True)
+    return query_dnf
 
 
-def get_matching_docs(dictionary, vectorized, query, alpha=0.5):
-    modelo_pesos_documentos = [
-        {term: freq for term, freq in doc} for doc in corpus_tfidf
-    ]
-
-    query_tokens = tokenize([query])
-    query_tokens = noise_removal(query_tokens)
-    query_tokens = stopword_elimination(query_tokens)
-    query_tokens = lemmatization(query_tokens)
-    consulta_tfidf = modelo_tfidf[dictionary.doc2bow(query_tokens[0])]
-
-    documentos_relevantes = [
-        i for i, pesos_documento in enumerate(modelo_pesos_documentos)
-        if calcular_similitud(pesos_documento, consulta_tfidf) >= alpha
-    ]
-
-    return documentos_relevantes
+def split_in_comp(query_dnf):
+    comps = str(query_dnf).split('|')
+    return [query_to_dnf(c) for c in comps]
 
 
-# Función para calcular la similitud
-def calcular_similitud(pesos_documento, consulta_tfidf):
-    similitud = sum(
-        pesos_documento.get(term, 0) * peso_consulta
-        for term, peso_consulta in consulta_tfidf
-    )
-    return similitud
+def get_matching_docs(dictionary, corp_rep, query_dnf):
+    # Función para verificar si un documento satisface una componente conjuntiva de la consulta
+    comps = split_in_comp(query_dnf)
+    comps = [[" ".join([str(sb) for sb in cmp.free_symbols])] for cmp in comps]
+    comps = [doc[0] for doc in comps] # flatten
+    comps = tokenize(comps)
+    comps = noise_removal(comps)
+    comps = stopword_elimination(comps)
+    comps = lemmatization(comps)
+    
+    comps_rep = [list(map(lambda x: x[0], dictionary.doc2bow(comp))) for comp in comps]
+
+    matching_documents = []
+    for i, doc in enumerate(corp_rep):
+        doc_ids = list(map(lambda x: x[0], doc))
+        for comp in comps_rep:
+            include = True
+            for sb in comp:
+                if sb not in doc_ids:
+                    include = False
+                    break
+            
+            if include:
+                matching_documents.append(i)
+
+    return matching_documents

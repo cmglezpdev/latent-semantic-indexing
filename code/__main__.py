@@ -1,14 +1,12 @@
 from query_builder import *
 from kulback_leibler_divergence import *
-from dataset_processing_LSI import load_data, get_corpus_text
+from dataset_processing_LSI import load_data
 import gradio as gr
 from boolean_model import *
 
 
 # representacion de los documentos en el espacio semantico latente
 U, S, Vt, doc_representation, vectorized, dictionary, tokenized_documents = load_data()
-load_tf_idf_model(vectorized)
-
 
 
 def search(query1, query2) -> tuple[str, str]:
@@ -16,7 +14,6 @@ def search(query1, query2) -> tuple[str, str]:
         "\n---------MATCH-------\n\n".join([text for _, text in documents_retrieveral_LSI(query1)]), 
         "\n-------MATCH-------\n".join([text for _, text in boolean_model_retrieveral(query2)])
     )
-
 
 interface = gr.Interface(
     fn=search,
