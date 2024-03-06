@@ -1,3 +1,5 @@
+from boolean_model import get_matching_docs, load_tf_idf_model
+from dataset_processing_LSI import get_corpus_text, load_data
 from query_aumentation import *
 from processing import *
 import typing
@@ -13,6 +15,9 @@ nlp = spacy.load("en_core_web_sm")
 """
 The mean of this module is to make the processing of the query
 """
+
+U, S, Vt, doc_representation, vectorized, dictionary, tokenized_documents = load_data()
+load_tf_idf_model(vectorized)
 
 
 def process_query(
@@ -46,7 +51,7 @@ def process_query(
 
     query = expand_query(query, lda_model, corpus_diccionary)
 
-    print(f"Expanded query: {query}")
+    # print(f"Expanded query: {query}")
 
     query_tokens = tokenize([query])
     query_tokens = noise_removal(query_tokens)
@@ -62,3 +67,41 @@ def process_query(
     )
 
     return query_projection_original
+
+
+def documents_retrieveral_LSI(query: str):
+    """
+    Makes the complete process of information documents_retrieveral using LSI
+
+    :param query: query to be processed
+    :return: list of documents
+    """
+
+    if query == "" or query is None:
+        return []
+    global U, S, Vt, doc_representation, vectorized, dictionary, tokenized_documents
+
+    processed_query = process_query(query, vectorized, tokenized_documents, dictionary, S, U, Vt)
+    
+    # cosine distance
+    weighted_documents = np.dot(Vt.T, processed_query)
+    document_norms = np.linalg.norm(doc_representation, axis=1)
+    query_vector_norms = np.linalg.norm(processed_query)
+    weighted_documents = weighted_documents / (document_norms * query_vector_norms)
+    
+    ordered_indexes = np.argsort(weighted_documents)[::-1]
+    # print(ordered_indexes)
+    return [(i, get_corpus_text(i)) for i in ordered_indexes[:4]]
+
+
+def boolean_model_retrieveral(query: str):
+    """
+    Makes the complete process of information retrieval using boolean model
+
+    :param query: query to be processed
+    :return: list of documents
+    """
+    if query == "" or query is None:
+        return []
+    global dictionary
+    return [(i, get_corpus_text(i)) for i in get_matching_docs(dictionary, vectorized, query)[:4]]
