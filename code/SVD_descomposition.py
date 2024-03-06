@@ -9,16 +9,17 @@ This Module is for Singular Value Decomposition
 """
 
 
-def svd_descomposition(
-    corpus: typing.List[typing.Tuple[int, float]], vocabulary: typing.List[str]
-):
+def svd_descomposition( corpus: typing.List[typing.Tuple[int, float]], vocabulary: typing.List[str] ):
     """
     SVD descomposition
 
-    :param BagOfWord corpus: document term descomposition
-    :param Dictionary vocabulary: the vocabullary to use
-    """
+    Args:
+        corpus (typing.List[typing.Tuple[int, float]]): BagOfWord corpus representing document term descomposition
+        vocabulary (typing.List[str]): Dictionary with the vocaulary
 
+    Returns:
+        _type_: Descomosition in SVD
+    """
     num_docs = len(corpus)
     num_term = len(vocabulary)
 
@@ -36,7 +37,6 @@ def svd_descomposition(
 
     # fitting the dimentions for the original matrix
     U_reduced = U[:, :k]
-    print(S)
     S_reduced = np.diag(S[:k])
     Vt_reduced = Vt[:k, :]
 

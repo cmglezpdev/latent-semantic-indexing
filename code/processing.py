@@ -2,8 +2,6 @@ import ir_datasets
 import gensim
 import spacy
 import typing
-import pickle
-
 
 """
 This Module is used to load and process the Corpus 
@@ -12,48 +10,42 @@ This Module is used to load and process the Corpus
 nlp = spacy.load("en_core_web_sm")  # loading spacy module
 
 
-def load_corpus() -> typing.List[str]:
+def load_corpus() -> list[str]:
     """
-    Load the corpus
+    Load the corpus from cranfield dataset
 
-    return List[str]
+    Returns:
+        list[str]: List of documents
     """
+
     dataset = ir_datasets.load("cranfield")
-
-    #    queries = []
-    #    for query in dataset.queries_iter():
-    #        queries.append(query.text)  # query.text
-    #        print(query)
-    #        pickle.dump(query.text, open("query.txt", "wb"))
-    #
-    #    pickle.dump(queries, open("querys.txt", "wb"))
-
     corpus = [doc.text for doc in dataset.docs_iter()]
     return corpus
 
 
-def tokenize(
-    text: typing.List[typing.List[str]],
-) -> typing.List[typing.List[spacy.tokens.Token]]:
+def tokenize( text: list[list[str]] ) -> list[list[spacy.tokens.Token]]:
     """
-    Tonekize the dataset
-    :param List[List[str]] text : The corpus content
+    Tokenize a list of documents to spacy tokens
 
+    Args:
+        text (list[list[str]]): List of documents (each document is a list of sentences)
 
-    :return List[List[spacy.tokens.Token]] : The tokenized corpus
+    Returns:
+        list[list[spacy.tokens.Token]]: List of list of spacy tokens for each sentences in each document
     """
 
     return [[token for token in nlp(document)] for document in text]
 
 
-def noise_removal(
-    tokens: typing.List[spacy.tokens.Token],
-) -> typing.List[spacy.tokens.Token]:
+def noise_removal( tokens: list[spacy.tokens.Token] ) -> list[spacy.tokens.Token]:
     """
     Remove the noise from the corpus , words such as "the" and "a" are removed
-    :param List[spacy.tokens.Token] tokens : The tokenized corpus
+    
+    Args:
+        tokens (list[spacy.tokens.Token]): The tokenized corpus
 
-    :return List[spacy.tokens.Token] : The noise removed corpus
+    Returns:
+        list[spacy.tokens.Token]: Filtered tokens
     """
 
     return [
@@ -61,15 +53,17 @@ def noise_removal(
     ]
 
 
-def stopword_elimination(
-    tokens: typing.List[spacy.tokens.Token],
-) -> typing.List[spacy.tokens.Token]:
+def stopword_elimination( tokens: list[spacy.tokens.Token] ) -> list[spacy.tokens.Token]:
     """
-    Removes the Stopwords from the corpus
-    :param List[spacy.tokens.Token] tokens : The tokenized corpus
+    Removes the Stopwords of the corpus
+    
+    Args:
+        tokens (list[spacy.tokens.Token]): Tokenized corpus
 
-    :return List[spacy.tokens.Token] : The stopwords removed corpus
+    Returns:
+        list[spacy.tokens.Token]: Filtered corpus without stopwords
     """
+
     return [
         [
             token
@@ -80,22 +74,20 @@ def stopword_elimination(
     ]
 
 
-def lemmatization(
-    tokens: typing.List[spacy.tokens.Token],
-) -> typing.List[spacy.tokens.Token]:
+def lemmatization( tokens: list[spacy.tokens.Token] ) -> list[str]:
     """
-    :param List[spacy.tokens.Token] tokens : The tokenized corpus
+    Lemmantization of the corpus
 
-    :return List[spacy.tokens.Token] : The lemmatized corpus
+    Args:
+        tokens (list[spacy.tokens.Token]): Tokenized corpus
+
+    Returns:
+        list[str]: Corpus with tokens that represent the lemma of each word
     """
     return [[token.lemma_ for token in tokenized_doc] for tokenized_doc in tokens]
 
 
-def frecuency_filtering(
-    tokens: typing.List[spacy.tokens.Token],
-    no_below: int = 10,
-    no_above: int = 0.5,
-) -> typing.List[spacy.tokens.Token]:
+def frecuency_filtering( tokens: list[spacy.tokens.Token], no_below: int = 10, no_above: int = 0.5 ) -> list[spacy.tokens.Token]:
     """
     Filter the tokens by its ocurrencies and returns the tokens and a dictionary with all document tokens
     :param tokens: List[spacy.tokens.Token] : The tokenized corpus
@@ -121,7 +113,7 @@ def frecuency_filtering(
     return filtered_tokens, dictionary
 
 
-def build_vocabulary(dictionary: gensim.corpora.Dictionary) -> typing.List[str]:
+def build_vocabulary(dictionary: gensim.corpora.Dictionary) -> list[str]:
     """
     Build the Vocabulary from a dictionary containing all the tokens
 
@@ -134,9 +126,9 @@ def build_vocabulary(dictionary: gensim.corpora.Dictionary) -> typing.List[str]:
 
 
 def vector_representation(
-    tokens: typing.List[typing.List[spacy.tokens.Token]],
+    tokens: list[list[spacy.tokens.Token]],
     dictionary: gensim.corpora.Dictionary,
-) -> typing.List[typing.Tuple[any, any]]:
+) -> list[typing.Tuple[any, any]]:
     """
     Make the vector representation of the corpus using the Bag of Words Model
 
@@ -149,8 +141,8 @@ def vector_representation(
 
 
 def speech_recognition(
-    tokens: typing.List[typing.List[spacy.tokens.Token]],
-) -> typing.List[str]:
+    tokens: list[list[spacy.tokens.Token]],
+) -> list[str]:
     """
     Finds the speech parts of the texts
     :param List[List[spacy.tokens.Token]] tokens : The tokenized corpus

@@ -2,9 +2,7 @@ from processing import *
 from SVD_descomposition import *
 import pickle
 import os
-
-
-data_save_directory = "../data"
+from constants import DATA_SAVE_DIR
 
 corpus = []
 
@@ -31,18 +29,18 @@ def process_data():
 
     U, S, Vt, doc_representation = svd_descomposition(vectorized, vocabulary)
 
-    pickle.dump(S, open(data_save_directory + "/S.pkl", "wb"))
-    pickle.dump(Vt, open(data_save_directory + "/Vt.pkl", "wb"))
+    pickle.dump(S, open(DATA_SAVE_DIR + "/S.pkl", "wb"))
+    pickle.dump(Vt, open(DATA_SAVE_DIR + "/Vt.pkl", "wb"))
     pickle.dump(
-        doc_representation, open(data_save_directory + "/doc_representation.pkl", "wb")
+        doc_representation, open(DATA_SAVE_DIR + "/doc_representation.pkl", "wb")
     )  # matriz de termino - documento
-    pickle.dump(corpus, open(data_save_directory + "/corpus.pkl", "wb"))
-    pickle.dump(vectorized, open(data_save_directory + "/vectorized_corpus.pkl", "wb"))
-    pickle.dump(dictionary, open(data_save_directory + "/corpus_dictionary.pkl", "wb"))
-    pickle.dump(U, open(data_save_directory + "/U.pkl", "wb"))
+    pickle.dump(corpus, open(DATA_SAVE_DIR + "/corpus.pkl", "wb"))
+    pickle.dump(vectorized, open(DATA_SAVE_DIR + "/vectorized_corpus.pkl", "wb"))
+    pickle.dump(dictionary, open(DATA_SAVE_DIR + "/corpus_dictionary.pkl", "wb"))
+    pickle.dump(U, open(DATA_SAVE_DIR + "/U.pkl", "wb"))
     pickle.dump(
         tokenized_documents,
-        open(data_save_directory + "/tokenized_documents.pkl", "wb"),
+        open(DATA_SAVE_DIR + "/tokenized_documents.pkl", "wb"),
     )
 
     return U, S, Vt, doc_representation, vectorized, dictionary, tokenized_documents
@@ -53,7 +51,7 @@ def load_data():
     Checks if there are stored data and decides whether to load or process data
     returns U, S, Vt, doc_representation, vectorized, dictionary data stored or processed
     """
-    if any(os.listdir(data_save_directory)):
+    if any(os.listdir(DATA_SAVE_DIR)):
         print("cargando datos :  .....")
         U, S, Vt, doc_representation, vectorized, dictionary, tokenized_documents = (
             load_from_memory()
@@ -72,17 +70,17 @@ def load_from_memory():
     loads the data stored in data_save_directory
     """
     global corpus
-    U = pickle.load(open(data_save_directory + "/U.pkl", "rb"))
-    S = pickle.load(open(data_save_directory + "/S.pkl", "rb"))
-    Vt = pickle.load(open(data_save_directory + "/Vt.pkl", "rb"))
+    U = pickle.load(open(DATA_SAVE_DIR + "/U.pkl", "rb"))
+    S = pickle.load(open(DATA_SAVE_DIR + "/S.pkl", "rb"))
+    Vt = pickle.load(open(DATA_SAVE_DIR + "/Vt.pkl", "rb"))
     doc_representation = pickle.load(
-        open(data_save_directory + "/doc_representation.pkl", "rb")
+        open(DATA_SAVE_DIR + "/doc_representation.pkl", "rb")
     )
-    corpus = pickle.load(open(data_save_directory + "/corpus.pkl", "rb"))
-    vectorized = pickle.load(open(data_save_directory + "/vectorized_corpus.pkl", "rb"))
-    dictionary = pickle.load(open(data_save_directory + "/corpus_dictionary.pkl", "rb"))
+    corpus = pickle.load(open(DATA_SAVE_DIR + "/corpus.pkl", "rb"))
+    vectorized = pickle.load(open(DATA_SAVE_DIR + "/vectorized_corpus.pkl", "rb"))
+    dictionary = pickle.load(open(DATA_SAVE_DIR + "/corpus_dictionary.pkl", "rb"))
     tokenized_documents = pickle.load(
-        open(data_save_directory + "/tokenized_documents.pkl", "rb")
+        open(DATA_SAVE_DIR + "/tokenized_documents.pkl", "rb")
     )
     return U, S, Vt, doc_representation, vectorized, dictionary, tokenized_documents
 
