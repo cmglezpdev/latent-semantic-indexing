@@ -69,3 +69,14 @@ where:
 ### Contrains Founded
 
 In order to improve our project we could add retroalimentation to improve the quality of the retrieveral , and improve the UI , we could test to find a number of topics/singular-values that improves the performance and quality of this process , add a crawler to retrieve updated information in each use
+
+
+### How to run this project 
+- you can use the script to run the project by typing
+  ``` bash
+  ./Startup.sh
+  ```
+- Or see the metrics 
+  ```bash
+  ./Startup.sh metrics
+  ```
