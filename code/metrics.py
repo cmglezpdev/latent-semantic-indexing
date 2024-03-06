@@ -46,9 +46,9 @@ def evaluate_model(fn_process_query):
         docs_ids = list(map(lambda x: int(x), list(docs.keys())))
         y_true, y_pred = gen_comp_vecs(relevant_docs, retrived_docs, docs_ids)
         
-        p_s = precision_score(y_true, y_pred, average='weighted')
-        r_s = recall_score(y_true, y_pred, average='weighted')
-        f1_s = f1_score(y_true, y_pred, average='weighted')
+        p_s = precision_score(y_true, y_pred)
+        r_s = recall_score(y_true, y_pred)
+        f1_s = f1_score(y_true, y_pred)
         
         precisions.append(p_s)
         recalls.append(r_s)
