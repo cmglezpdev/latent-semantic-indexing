@@ -1,4 +1,3 @@
-import spacy
 import gensim.corpora as corpora
 from gensim.models import LdaModel
 import typing
@@ -46,7 +45,6 @@ def expand_query(
     """
 
     query_tokens = tokenize([query])
-
     query_tokens = noise_removal(query_tokens)
     query_tokens = stopword_elimination(query_tokens)
     query_tokens = lemmatization(query_tokens)
